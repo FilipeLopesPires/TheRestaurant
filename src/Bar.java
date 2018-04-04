@@ -13,8 +13,9 @@ public class Bar {
      */
     
     private int nstudents;                                  // number of Students that are going to the Restaurant
-    private int arrivedStudents = 0;                        // number of Students that have arrived at the Restaurant
-    private char alternative = '\0';                        // tells the Waiter what to do
+    private int arrivedStudents;                            // number of Students that have arrived at the Restaurant
+    private boolean hasEveryoneChosen;                      // tells the Waiter if all Students have chosen their courses
+    private volatile char alternative;                      // tells the Waiter what to do
                             /**
                              * 's' means salute student
                              * 'o' means take table order
@@ -31,6 +32,8 @@ public class Bar {
      */
     public Bar(int nstudents){
         this.nstudents = nstudents;
+        arrivedStudents = 0;
+        alternative = '\0';
     }
     
     /**
@@ -44,7 +47,7 @@ public class Bar {
     public synchronized char lookAround(Waiter waiter) {
         waiter.setWaiterState(Waiter.WaiterState.APPRAISING_SITUATION);
         GenericIO.writelnString("Waiter is " + waiter.getWaiterState());
-        while(alternative== '\0') {
+        while(alternative == '\0') {
             try{
                 wait();                              // the Waiter Thread must block while nothing happens 
             } catch (InterruptedException e) {}
@@ -57,13 +60,17 @@ public class Bar {
      */
     public synchronized TheRestaurantMain.ArrivalOrder enter() {
         arrivedStudents++;
+        while(alternative != '\0') {
+            try {
+                wait();
+            } catch (InterruptedException e) {}
+        }
         alternative = 's';
         notifyAll();                                   // the Student Thread must notify the Waiter Thread when he arrives at the Restaurant
         if(arrivedStudents == 1) {
             return TheRestaurantMain.ArrivalOrder.FIRST;
         } else if (arrivedStudents == nstudents) {
             alternative = 'o';
-            notifyAll();                               // the last Student Thread to arrive must also notify the Waiter for him to give the students the pad
             return TheRestaurantMain.ArrivalOrder.LAST;
         }
         return TheRestaurantMain.ArrivalOrder.MIDDLE;
@@ -74,12 +81,14 @@ public class Bar {
     public synchronized void returnToTheBar(Waiter waiter) { 
         alternative = '\0'; 
         waiter.setWaiterState(Waiter.WaiterState.APPRAISING_SITUATION);
+        notifyAll();                                    // the Waiter Thread must notify anyone dependent on him everytime he returns to the Bar
     }
     /**
      *  Used by Student to 
      */
     public synchronized void callTheWaiter() {
-        
+        setHasEveryoneChosen();
+        notifyAll();                                   // the FIRST Student Thread must notify the Waiter Thread once everyone has chosen
     }
     /**
      *  Used by Chef to 
@@ -116,4 +125,11 @@ public class Bar {
      *  Auxiliar Methods
      */
     
+    public boolean getHasEveryoneChosen() {
+        return hasEveryoneChosen;
+    }
+    
+    public void setHasEveryoneChosen() {
+        hasEveryoneChosen = true;
+    }
 }

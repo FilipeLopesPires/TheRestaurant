@@ -58,13 +58,14 @@ public class Student extends Thread {
         table.readTheMenu(this);
         if(arrivedIn == TheRestaurantMain.ArrivalOrder.FIRST) {
             while(!table.hasEverybodyChosen()) {
-                table.prepareTheOrder();
+                table.prepareTheOrder(this);
             }
             bar.callTheWaiter();
-            table.describeTheOrder();
-            table.joinTheTalk();
+            table.describeTheOrder(this);
+            table.joinTheTalk(this);
         } else {
             table.informCompanion();
+            table.joinTheTalk(this);
         }
         for(int p=0; p<nstudents; p++) {
             table.startEating();

@@ -14,7 +14,7 @@ public class Kitchen {
     
     private int nstudents;                                  // number of meals to be prepared by the Restaurant's Chef
     private int ndishes;                                    // number of dishes/portions per Student
-    private boolean order = false;                          // conditional variable to warn the Chef when to start cooking
+    private boolean order;                                  // conditional variable to warn the Chef when to start cooking
     
     /**
      *  Constructor
@@ -23,6 +23,7 @@ public class Kitchen {
     public Kitchen(int nstudents, int ndishes){
         this.nstudents = nstudents;
         this.ndishes = ndishes;
+        order = false;
     }
     
     /**
@@ -56,7 +57,7 @@ public class Kitchen {
         chef.setChefState(Chef.ChefState.PREPARING_THE_COURSE);
         GenericIO.writelnString ("Chef starts " + chef.getChefState() + ".");
         try{
-            chef.sleep(1000);                                // simulates preparation time (preparing, cooking, etc.)
+            Thread.sleep(1000);                                // simulates preparation time (preparing, cooking, etc.)
         } catch (InterruptedException e) {}
         return nstudents;
     }

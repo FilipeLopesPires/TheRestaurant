@@ -25,7 +25,6 @@ public class Waiter extends Thread {
     private static Table table;                                 // Table Shared Region Access Point
     private WaiterState waiterState;                            // Thread's State
     private char alternative;                                   // tells the Waiter what to do
-    private boolean hasEveryoneChosen;                          // tells the Waiter if all Students have chosen their courses
     
     /**
      *  Constructor
@@ -39,7 +38,6 @@ public class Waiter extends Thread {
         this.bar = bar;
         this.table = table;
         waiterState = WaiterState.APPRAISING_SITUATION;     // Initial State
-        hasEveryoneChosen = false;
     }
     
     /**
@@ -58,7 +56,7 @@ public class Waiter extends Thread {
                     bar.returnToTheBar(this);
                     break;
                 case 'o':
-                    table.getThePad(this);
+                    table.getThePad(bar,this);
                     kitchen.handTheNoteToTheChef();             // block while chef does not start preparation
                     bar.returnToTheBar(this);
                     break;
@@ -96,11 +94,4 @@ public class Waiter extends Thread {
      */
     public void setWaiterState(WaiterState newWaiterState) { waiterState = newWaiterState; }
     
-    public boolean getHasEveryoneChosen() {
-        return hasEveryoneChosen;
-    }
-    
-    public void setHasEveryoneChosen() {
-        hasEveryoneChosen = true;
-    }
 }
