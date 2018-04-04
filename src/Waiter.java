@@ -11,7 +11,7 @@ public class Waiter extends Thread {
      *  Internal Data
      */
     
-    public static enum WaiterState {                        // Internal State Enum
+    public enum WaiterState {                                   // Internal State Enum
         APPRAISING_SITUATION,
         PRESENTING_THE_MENU,
         TAKING_THE_ORDER,
@@ -20,11 +20,12 @@ public class Waiter extends Thread {
         PROCESSING_THE_BILL,
         RECEIVING_PAYMENT;
     }
-    private Kitchen kitchen;                                // Kitchen Shared Region Access Point
-    private Bar bar;                                        // Bar Shared Region Access Point
-    private Table table;                                    // Table Shared Region Access Point
-    private WaiterState waiterState;                        // Thread's State
-    private char alternative;                               // tells the Waiter what to do
+    private static Kitchen kitchen;                             // Kitchen Shared Region Access Point
+    private static Bar bar;                                     // Bar Shared Region Access Point
+    private static Table table;                                 // Table Shared Region Access Point
+    private WaiterState waiterState;                            // Thread's State
+    private char alternative;                                   // tells the Waiter what to do
+    private boolean hasEveryoneChosen;                          // tells the Waiter if all Students have chosen their courses
     
     /**
      *  Constructor
@@ -38,6 +39,7 @@ public class Waiter extends Thread {
         this.bar = bar;
         this.table = table;
         waiterState = WaiterState.APPRAISING_SITUATION;     // Initial State
+        hasEveryoneChosen = false;
     }
     
     /**
@@ -49,26 +51,31 @@ public class Waiter extends Thread {
      */
     @Override
     public void run () {
-        while((alternative = bar.lookAround()) != 'e') {
+        while((alternative = bar.lookAround(this)) != 'e') {    // block while nothing happens
             switch(alternative) {
                 case 's':
                     table.saluteTheStudent();
-                    bar.returnToTheBar();
+                    bar.returnToTheBar(this);
                     break;
                 case 'o':
-                    
-                    bar.returnToTheBar();
+                    table.getThePad(this);
+                    kitchen.handTheNoteToTheChef();             // block while chef does not start preparation
+                    bar.returnToTheBar(this);
                     break;
                 case 'p':
-                    
-                    bar.returnToTheBar();
+                    while(!kitchen.haveAllClientsBeenSirved()) {
+                        kitchen.collectPortion();               // block while chef does not deliver him the portion
+                        table.deliverPortion();
+                    }
+                    bar.returnToTheBar(this);
                     break;
                 case 'b':
-                    
-                    bar.returnToTheBar();
+                    bar.prepareTheBill();
+                    table.presentTheBill();
+                    bar.returnToTheBar(this);
                     break;
                 case 'g':
-                    
+                    bar.sayGoodbye();
                     break;
             }
         }
@@ -88,4 +95,12 @@ public class Waiter extends Thread {
      *  @param newWaiterState State to replace the current Thread's state.
      */
     public void setWaiterState(WaiterState newWaiterState) { waiterState = newWaiterState; }
+    
+    public boolean getHasEveryoneChosen() {
+        return hasEveryoneChosen;
+    }
+    
+    public void setHasEveryoneChosen() {
+        hasEveryoneChosen = true;
+    }
 }

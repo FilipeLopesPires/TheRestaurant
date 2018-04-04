@@ -13,6 +13,7 @@ public class Table {
      */
     
     private int nstudents;                                  // number of Students to sit at the Restaurant's Table
+    private int arrivedStudents = 0;                        // number of Students that have arrived at the Restaurant
     
     /**
      *  Constructor
@@ -29,8 +30,18 @@ public class Table {
     /**
      *  Used by Student to sit at the table.
      */
-    public synchronized void enter() {
-        
+    public synchronized void enter(Student student) {
+        arrivedStudents++;
+        student.setStudentState(Student.StudentState.TAKING_A_SEAT_AT_THE_TABLE);
+        GenericIO.writelnString("The Student is " + student.getStudentState() + ".");
+        while(arrivedStudents != nstudents) {
+            try {
+                wait();                             // the Student Thread must block while all Students have not arrived
+            } catch (InterruptedException e) {}
+        }
+        if(student.getArrivedIn() == TheRestaurantMain.ArrivalOrder.LAST) {
+            notifyAll();                            // the last Student Thread to arrive must notify all Students that everyone has arrived
+        }
     }
     /**
      *  Used by Waiter to salute the arriving Students.
@@ -41,14 +52,24 @@ public class Table {
     /**
      *  Used by Waiter to 
      */
-    public synchronized void getThePad() {
-        
+    public synchronized void getThePad(Waiter waiter) {
+        GenericIO.writelnString("Waiter salutes the last student.\n");
+        waiter.setWaiterState(Waiter.WaiterState.PRESENTING_THE_MENU);
+        GenericIO.writelnString("Waiter is now " + waiter.getWaiterState() + " to the Students.");
+        while(!waiter.getHasEveryoneChosen()) {
+            try {
+                wait();                                  // the Waiter Thread must block while all Students are choosing their courses
+            } catch (InterruptedException e) {}
+        }
     }
     /**
      *  Used by Student to 
      */
-    public synchronized void readTheMenu() {
-        
+    public synchronized void readTheMenu(Student student) {
+        GenericIO.writelnString("I am going to block here! :)");
+        try {
+            wait();                     
+        } catch (InterruptedException e) {}
     }
     /**
      *  Used by Student to 

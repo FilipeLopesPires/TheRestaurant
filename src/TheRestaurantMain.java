@@ -35,9 +35,9 @@ public class TheRestaurantMain {
         bar = new Bar(nstudents);
         table = new Table(nstudents);
         
-        chef = new Chef(kitchen);
+        chef = new Chef(kitchen, bar);
         GenericIO.writelnString("Chef initialized.");
-        waiter = new Waiter(kitchen,bar,table);
+        waiter = new Waiter(kitchen, bar, table);
         GenericIO.writelnString("Waiter initialized.");
         for(int i=0; i<nstudents; i++) {
             students[i] = new Student(bar,table);
@@ -48,9 +48,7 @@ public class TheRestaurantMain {
         /* start of the simulation */
         
         chef.start();
-        GenericIO.writelnString("Chef is " + chef.getChefState());
         waiter.start();
-        GenericIO.writelnString("Waiter is " + waiter.getWaiterState());
         for(int i=0; i<nstudents; i++) {
             students[i].start();
             GenericIO.writelnString("Student no." + students[i].getID() + " is " + students[i].getStudentState());
@@ -60,7 +58,7 @@ public class TheRestaurantMain {
         /* wait for the end of the simulation */
         
         // ...
-        GenericIO.writelnString ();
+        //GenericIO.writelnString ();
     }
     
     public static enum ArrivalOrder {                       // Order of Arrival Enum

@@ -13,7 +13,7 @@ public class Bar {
      */
     
     private int nstudents;                                  // number of Students that are going to the Restaurant
-    private int arrivals = 0;                               // number of Students that have arrived at the Restaurant
+    private int arrivedStudents = 0;                        // number of Students that have arrived at the Restaurant
     private char alternative = '\0';                        // tells the Waiter what to do
                             /**
                              * 's' means salute student
@@ -41,17 +41,29 @@ public class Bar {
      * Used by Waiter to return his current alternative (action to be done) or empty if there is nothing to be done.
      * @return Character representing the current alternative
      */
-    public synchronized char lookAround() { return alternative; }
+    public synchronized char lookAround(Waiter waiter) {
+        waiter.setWaiterState(Waiter.WaiterState.APPRAISING_SITUATION);
+        GenericIO.writelnString("Waiter is " + waiter.getWaiterState());
+        while(alternative== '\0') {
+            try{
+                wait();                              // the Waiter Thread must block while nothing happens 
+            } catch (InterruptedException e) {}
+        }
+        return alternative;
+    }
     /**
      *  Used by Student to inform the Waiter of his arrival and returns the Student's place of arrival.
      *  @return Element from the ArrivalOrder Enumerate
      */
     public synchronized TheRestaurantMain.ArrivalOrder enter() {
-        arrivals++;
+        arrivedStudents++;
         alternative = 's';
-        if(arrivals == 1) {
+        notifyAll();                                   // the Student Thread must notify the Waiter Thread when he arrives at the Restaurant
+        if(arrivedStudents == 1) {
             return TheRestaurantMain.ArrivalOrder.FIRST;
-        } else if (arrivals == nstudents) {
+        } else if (arrivedStudents == nstudents) {
+            alternative = 'o';
+            notifyAll();                               // the last Student Thread to arrive must also notify the Waiter for him to give the students the pad
             return TheRestaurantMain.ArrivalOrder.LAST;
         }
         return TheRestaurantMain.ArrivalOrder.MIDDLE;
@@ -59,11 +71,20 @@ public class Bar {
     /**
      *  Used by Waiter to return to the Bar and reset the alternative (action to be done).
      */
-    public synchronized void returnToTheBar() { alternative = '\0'; }
+    public synchronized void returnToTheBar(Waiter waiter) { 
+        alternative = '\0'; 
+        waiter.setWaiterState(Waiter.WaiterState.APPRAISING_SITUATION);
+    }
     /**
      *  Used by Student to 
      */
     public synchronized void callTheWaiter() {
+        
+    }
+    /**
+     *  Used by Chef to 
+     */
+    public synchronized void alertTheWaiter() {
         
     }
     /**

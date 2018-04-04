@@ -11,7 +11,7 @@ public class Student extends Thread {
      *  Internal Data
      */
     
-    public static enum StudentState {                       // Internal State Enum
+    public enum StudentState {                              // Internal State Enum
         GOING_TO_THE_RESTAURANT,
         TAKING_A_SEAT_AT_THE_TABLE,
         SELECTING_THE_COURSES,
@@ -22,8 +22,8 @@ public class Student extends Thread {
         GOING_HOME;
     }
 
-    private Bar bar;                                        // Bar Shared Region Access Point
-    private Table table;                                    // Table Shared Region Access Point
+    private static Bar bar;                                 // Bar Shared Region Access Point
+    private static Table table;                             // Table Shared Region Access Point
     private static int nstudents = 0;                       // Number of created Student Thread objects
     private final int ID;                                   // Thread's ID
     private StudentState studentState;                      // Thread's State
@@ -54,8 +54,8 @@ public class Student extends Thread {
     public void run () {
         walkABit();
         arrivedIn = bar.enter();
-        table.enter();
-        table.readTheMenu();
+        table.enter(this);
+        table.readTheMenu(this);
         if(arrivedIn == TheRestaurantMain.ArrivalOrder.FIRST) {
             while(!table.hasEverybodyChosen()) {
                 table.prepareTheOrder();
@@ -66,6 +66,22 @@ public class Student extends Thread {
         } else {
             table.informCompanion();
         }
+        for(int p=0; p<nstudents; p++) {
+            table.startEating();
+            table.endEating();
+            while(table.hasEverybodyFinished()) {
+                if(p < nstudents-1) {
+                    bar.signalTheWaiter();
+                    table.signalTheWaiter();
+                }
+            }
+        }
+        if(arrivedIn == TheRestaurantMain.ArrivalOrder.LAST) {
+            bar.shouldHaveArrivedEarlier();
+            table.shouldHaveArrivedEarlier();
+            table.honorTheBill();
+        }
+        table.exit();
     }
     
     /**
@@ -100,4 +116,8 @@ public class Student extends Thread {
      *  @param newStudentState State to replace the current Thread's state.
      */
     public void setStudentState(StudentState newStudentState) { studentState = newStudentState; }
+    
+    public TheRestaurantMain.ArrivalOrder getArrivedIn() {
+        return arrivedIn;
+    }
 }

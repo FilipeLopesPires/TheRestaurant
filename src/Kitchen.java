@@ -13,8 +13,8 @@ public class Kitchen {
      */
     
     private int nstudents;                                  // number of meals to be prepared by the Restaurant's Chef
-    private int ndishes;
-    private boolean order = false;
+    private int ndishes;                                    // number of dishes/portions per Student
+    private boolean order = false;                          // conditional variable to warn the Chef when to start cooking
     
     /**
      *  Constructor
@@ -32,7 +32,9 @@ public class Kitchen {
     /**
      *  Used by Chef to 
      */
-    public synchronized void watchTheNews() {
+    public synchronized void watchTheNews(Chef chef) {
+        chef.setChefState(Chef.ChefState.WAITING_FOR_AN_ORDER);
+        GenericIO.writelnString("Chef is watching the news while he is " + chef.getChefState());
         while (!order) {
             try{
                 wait();                                     // the Chef Thread must block if there is no order to process
@@ -44,19 +46,26 @@ public class Kitchen {
      */
     public synchronized void handTheNoteToTheChef() {
         order = true;
+        notifyAll();                                   // the Waiter Thread must notify the Chef when the order is made
         GenericIO.writelnString ("Waiter hands the note to the Chef.");
     }
     /**
      *  Used by Chef to 
      */
-    public synchronized void startPreparation() {
-        
+    public synchronized int startPreparation(Chef chef) {
+        chef.setChefState(Chef.ChefState.PREPARING_THE_COURSE);
+        GenericIO.writelnString ("Chef starts " + chef.getChefState() + ".");
+        try{
+            chef.sleep(1000);                                // simulates preparation time (preparing, cooking, etc.)
+        } catch (InterruptedException e) {}
+        return nstudents;
     }
     /**
      *  Used by Chef to 
      */
-    public synchronized void proceedToPresentation() {
-        
+    public synchronized void proceedToPresentation(Chef chef) {
+        chef.setChefState(Chef.ChefState.DISHING_THE_PORTIONS);
+        GenericIO.writelnString ("Chef finishes all preparations and proceeds to " + chef.getChefState() + " to the Waiter.");
     }
     /**
      *  Used by Chef to 
@@ -103,7 +112,7 @@ public class Kitchen {
     /**
      *  Used by Chef to 
      */
-    public void cleanUp() {
+    public synchronized void cleanUp() {
         
     }
     
@@ -111,4 +120,8 @@ public class Kitchen {
      *  Auxiliar Methods
      */
     
+    
+    public synchronized int getNdishes() {
+        return ndishes;
+    }
 }
