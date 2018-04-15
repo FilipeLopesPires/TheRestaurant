@@ -1,4 +1,8 @@
+package SharedRegions;
+import Main.*;
+import Entities.*;
 import genclass.GenericIO;
+
 /**
  * 
  *  General Description:
@@ -12,10 +16,8 @@ public class Bar {
      *  Internal Data
      */
     
-    private int nstudents;                                  // number of Students that are going to the Restaurant
-    private int arrivedStudents;                            // number of Students that have arrived at the Restaurant
-    private boolean hasEveryoneChosen;                      // tells the Waiter if all Students have chosen their courses
-    private volatile char alternative;                      // tells the Waiter what to do
+    private GeneralRepository repo;                                             // Restaurant's Repository
+    private char alternative;                                                   // tells the Waiter what to do
                             /**
                              * 's' means salute student
                              * 'o' means take table order
@@ -30,9 +32,8 @@ public class Bar {
      *  Allocates a new Bar Shared Region.
      *  @param waiter Waiter Thread responsible for the Restaurant's Bar
      */
-    public Bar(int nstudents){
-        this.nstudents = nstudents;
-        arrivedStudents = 0;
+    public Bar(GeneralRepository repo){
+        this.repo = repo;
         alternative = '\0';
     }
     
@@ -44,13 +45,14 @@ public class Bar {
      * Used by Waiter to return his current alternative (action to be done) or empty if there is nothing to be done.
      * @return Character representing the current alternative
      */
-    public synchronized char lookAround(Waiter waiter) {
-        waiter.setWaiterState(Waiter.WaiterState.APPRAISING_SITUATION);
-        GenericIO.writelnString("Waiter is " + waiter.getWaiterState());
+    public synchronized char lookAround() {
+        ((Waiter)Thread.currentThread()).setWaiterState(Waiter.WaiterState.AS);
+        repo.updateWaiterState(((Waiter)Thread.currentThread()).getWaiterState());
+        
         while(alternative == '\0') {
-            try{
-                wait();                              // the Waiter Thread must block while nothing happens 
-            } catch (InterruptedException e) {}
+            try {
+                this.wait();                                                    // Waiter blocks while nothing happens
+            } catch (InterruptedException ie) {}
         }
         return alternative;
     }
@@ -58,42 +60,35 @@ public class Bar {
      *  Used by Student to inform the Waiter of his arrival and returns the Student's place of arrival.
      *  @return Element from the ArrivalOrder Enumerate
      */
-    public synchronized TheRestaurantMain.ArrivalOrder enter() {
-        arrivedStudents++;
+    public synchronized void enter() {
         while(alternative != '\0') {
             try {
-                wait();
-            } catch (InterruptedException e) {}
+                this.wait();                                                    // Student blocks if and while Waiter is occupied (saluting other Student)
+            } catch (InterruptedException ie) {}
         }
         alternative = 's';
-        notifyAll();                                   // the Student Thread must notify the Waiter Thread when he arrives at the Restaurant
-        if(arrivedStudents == 1) {
-            return TheRestaurantMain.ArrivalOrder.FIRST;
-        } else if (arrivedStudents == nstudents) {
-            alternative = 'o';
-            return TheRestaurantMain.ArrivalOrder.LAST;
-        }
-        return TheRestaurantMain.ArrivalOrder.MIDDLE;
+        this.notifyAll();                                                       // Student notifies the Waiter of his arrival
     }
     /**
      *  Used by Waiter to return to the Bar and reset the alternative (action to be done).
      */
-    public synchronized void returnToTheBar(Waiter waiter) { 
-        alternative = '\0'; 
-        waiter.setWaiterState(Waiter.WaiterState.APPRAISING_SITUATION);
-        notifyAll();                                    // the Waiter Thread must notify anyone dependent on him everytime he returns to the Bar
+    public synchronized void returnToTheBar() { 
+        alternative = '\0';
+        this.notifyAll();                                                       // Waiter notifies anyone that is waiting for him
     }
     /**
      *  Used by Student to 
      */
     public synchronized void callTheWaiter() {
-        setHasEveryoneChosen();
-        notifyAll();                                   // the FIRST Student Thread must notify the Waiter Thread once everyone has chosen
+        
     }
     /**
      *  Used by Chef to 
      */
     public synchronized void alertTheWaiter() {
+        if (((Chef)Thread.currentThread()).setChefState(Chef.ChefState.DeTP) ) {
+            repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
+        }
         
     }
     /**
@@ -106,6 +101,9 @@ public class Bar {
      *  Used by Waiter to 
      */
     public synchronized void prepareTheBill() {
+        if (((Waiter)Thread.currentThread()).setWaiterState(Waiter.WaiterState.PTB) ) {
+            repo.updateWaiterState(((Waiter)Thread.currentThread()).getWaiterState());
+        }
         
     }
     /**
@@ -125,11 +123,7 @@ public class Bar {
      *  Auxiliar Methods
      */
     
-    public boolean getHasEveryoneChosen() {
-        return hasEveryoneChosen;
-    }
+    public char getAlternative() { return alternative; }
+    public void setAlternative(char alternative) { this.alternative = alternative; }
     
-    public void setHasEveryoneChosen() {
-        hasEveryoneChosen = true;
-    }
 }
