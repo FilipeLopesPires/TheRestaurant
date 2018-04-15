@@ -88,13 +88,12 @@ public class GeneralRepository {
     }
     
     private void updateCourse() {
-        /*
-        if(fileLog.openForAppending(null,filename)) {
-            fileLog.writelnFormString();
-            fileLog.close();
+        if(!fileLog.openForAppending(null,filename)) {
+            GenericIO.writelnString("An error occurred when opening the file. Program will end now.");
+            System.exit(1);
         }
-        */
-        System.out.println("Course no." + currentCourse + "\n");
+        fileLog.writelnString("Course no." + currentCourse);
+        GenericIO.writelnString("Course no." + currentCourse);
     }
     
     public synchronized void updateChefState(Chef.ChefState newChefState) {
@@ -112,7 +111,19 @@ public class GeneralRepository {
         updateLog();
     }
     
+    public synchronized void updateAllStudentStates(Student.StudentState newStudentState, int studentID) {
+        if(this.studentState[studentID-1] != newStudentState) {
+            for(int i=0; i<TheRestaurantMain.nstudents; i++) {
+                studentState[i] = newStudentState;
+            }
+            updateLog();
+        }
+    }
+    
     public synchronized void updateCourse(int nCourse) {
+        if(currentCourse==nCourse) {
+            return;
+        }
         currentCourse = nCourse;
         updateCourse();
     }

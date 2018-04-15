@@ -18,7 +18,10 @@ public class Kitchen {
     
     private static GeneralRepository repo;                                      // Restaurant's Repository
     private boolean order;                                                      // tells the Chef when an order is delivered
-        
+    private boolean portionReady;                                               // tells the Waiter if the current portion is ready to be delivered at the table
+    private int deliveredPortions;                                              // tells the Chef how many portions of the current course have been delivered
+    private int totalPortions;                                                  // tells the Chef how many portions have been delivered (of all courses)
+    
     /**
      *  Constructor
      *  Allocates a new Kitchen Shared Region.
@@ -26,6 +29,9 @@ public class Kitchen {
     public Kitchen(GeneralRepository repo){
         this.repo = repo;
         order = false;
+        portionReady = false;
+        deliveredPortions = 0;
+        totalPortions = 0;
     }
     
     /**
@@ -51,7 +57,8 @@ public class Kitchen {
         if (((Waiter)Thread.currentThread()).setWaiterState(Waiter.WaiterState.PTO) ) {
             repo.updateWaiterState(((Waiter)Thread.currentThread()).getWaiterState());
         }
-        
+        order = true;
+        this.notifyAll();                                                       // Waiter notifies the Chef that an order has been delivered
     }
     /**
      *  Used by Chef to 
@@ -61,61 +68,83 @@ public class Kitchen {
             repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
         }
         
+        try {
+            Thread.sleep((int) (1000 * Math.random ()));                        // simulates time of preparing the 1st course
+        } catch (Exception e) {}
     }
     /**
      *  Used by Chef to 
      */
-    public synchronized void proceedToPresentation() {
+    public synchronized void proceedToPresentation(int nCourse) {
         if (((Chef)Thread.currentThread()).setChefState(Chef.ChefState.DiTP) ) {
             repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
         }
+        //repo.updateCourse(nCourse);                                             //   !!!   algo esta a correr mal quando corre este update   !!!
         
+        totalPortions += deliveredPortions;
+        deliveredPortions = 0;
     }
     /**
      *  Used by Chef to 
      *  @return 
      */
     public synchronized boolean haveAllPortionsBeenDelivered() {
-        
-        
+        if(deliveredPortions == TheRestaurantMain.nstudents) {
+            return true;
+        }
         return false;
     }
     /**
      *  Used by Chef to 
      */
     public synchronized void haveNextPortionReady() {
-        
-    }
-    /**
-     *  Used by Waiter to 
-     *  @return 
-     */
-    public synchronized boolean haveAllClientsBeenServed() {
-        if (((Waiter)Thread.currentThread()).setWaiterState(Waiter.WaiterState.WFP) ) {
-            repo.updateWaiterState(((Waiter)Thread.currentThread()).getWaiterState());
-        }
-        
-        return false;
+        portionReady = true;
+        this.notifyAll();                                                       // Chef notifies the Waiter that the portion is ready to be delivered at the Table
     }
     /**
      *  Used by Waiter to 
      */
     public synchronized void collectPortion() {
+        if (((Waiter)Thread.currentThread()).setWaiterState(Waiter.WaiterState.WFP) ) {
+            repo.updateWaiterState(((Waiter)Thread.currentThread()).getWaiterState());
+        }
         
+        while(!portionReady) {
+            try {
+                this.wait();                                                    // Waiter blocks while Chef has not yet made next portion ready
+            } catch (InterruptedException ie) {}
+        }
+        portionReady = false;
+        deliveredPortions++;
+    }
+    /**
+     *  Used by Waiter to 
+     *  @return 
+     */
+    public synchronized boolean haveAllStudentsBeenServed() {
+        if(totalPortions == (TheRestaurantMain.nstudents * (TheRestaurantMain.ncourses-1))+1) {
+            return true;
+        }
+        return false;
     }
     /**
      *  Used by Chef to 
      *  @return 
      */
     public synchronized boolean hasTheOrderBeenCompleted() {
-        
-        return false;
+        return haveAllStudentsBeenServed();                                     //   !!!   Problemas aqui e na funcao acima!   !!!
     }
     /**
      *  Used by Chef to 
      */
     public synchronized void continuePreparation() {
+        if (((Chef)Thread.currentThread()).setChefState(Chef.ChefState.PTC) ) {
+            repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
+        }
         
+        try {
+            Thread.sleep((int) (1000 * Math.random ()));                        // simulates time of preparing the 2nd & 3r courses
+        } catch (Exception e) {}
     }
     /**
      *  Used by Chef to 
@@ -124,7 +153,6 @@ public class Kitchen {
         if (((Chef)Thread.currentThread()).setChefState(Chef.ChefState.CS) ) {
             repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
         }
-        
     }
     
     /**

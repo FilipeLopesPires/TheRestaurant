@@ -66,10 +66,9 @@ public class Waiter extends Thread {
                     bar.returnToTheBar();
                     break;
                 case 'p':
-                    while(!kitchen.haveAllClientsBeenServed()) {                // WFP
-                        kitchen.collectPortion();
+                    while(!kitchen.haveAllStudentsBeenServed()) {               
+                        kitchen.collectPortion();                               // WFP
                         table.deliverPortion();
-                        // waiter must alert the students here (probably going to have to create a function here from table)
                         bar.returnToTheBar();
                     }
                     break;

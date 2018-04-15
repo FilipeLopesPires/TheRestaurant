@@ -57,8 +57,8 @@ public class Student extends Thread {
     @Override
     public void run () {
         walkABit();                                                             // GTTR
-        bar.enter();
-        table.enter(ID);                                                        // TASATT
+        arrivedIn = bar.enter();
+        table.enter();                                                          // TASATT
         table.readTheMenu();                                                    // STC
         if(arrivedIn == TheRestaurantMain.ArrivalOrder.FIRST) {
             while(!table.hasEverybodyChosen()) {                                // OTO
@@ -71,17 +71,15 @@ public class Student extends Thread {
             table.informCompanion();
             table.joinTheTalk();                                                // CWC
         }
-        for(int p=0; p<nstudents; p++) {
-            for(int c=0; c<TheRestaurantMain.ncourses; c++) {
-                table.startEating();                                            // ETM
-                table.endEating();
-            }
-            if(p < nstudents-1) {
-                bar.signalTheWaiter();
-                table.joinTheTalk();                                            // CWC
-            } else {
-                table.joinTheTalk();                                            // CWC
-            }
+        for(int c=0; c<TheRestaurantMain.ncourses; c++) {
+            table.startEating();                                                // ETM
+            table.endEating();
+        }
+        if(arrivedIn == TheRestaurantMain.ArrivalOrder.LAST) {
+            bar.signalTheWaiter();
+            table.joinTheTalk();                                                // CWC
+        } else {
+            table.joinTheTalk();                                                // CWC
         }
         if(arrivedIn == TheRestaurantMain.ArrivalOrder.LAST) {
             bar.shouldHaveArrivedEarlier();

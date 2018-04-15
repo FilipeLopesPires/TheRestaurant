@@ -26,6 +26,8 @@ public class Bar {
                              * 'g' means say goodbye
                              * 'e' means end
                              */
+    private int arrivedStudents;                                                // aux var to know in which place did each Student arrive
+    private TheRestaurantMain.ArrivalOrder arrivedIn;                           // tells a Student in which place did he arrive
     
     /**
      *  Constructor
@@ -60,14 +62,25 @@ public class Bar {
      *  Used by Student to inform the Waiter of his arrival and returns the Student's place of arrival.
      *  @return Element from the ArrivalOrder Enumerate
      */
-    public synchronized void enter() {
+    public synchronized TheRestaurantMain.ArrivalOrder enter() {
+        arrivedStudents++;
+        if(arrivedStudents==1) {
+            arrivedIn = TheRestaurantMain.ArrivalOrder.FIRST;
+        } else if(arrivedStudents==TheRestaurantMain.nstudents) {
+            arrivedIn = TheRestaurantMain.ArrivalOrder.LAST;
+        } else {
+            arrivedIn = TheRestaurantMain.ArrivalOrder.MIDDLE;
+        }
+        
         while(alternative != '\0') {
             try {
                 this.wait();                                                    // Student blocks if and while Waiter is occupied (saluting other Student)
             } catch (InterruptedException ie) {}
         }
+        
         alternative = 's';
         this.notifyAll();                                                       // Student notifies the Waiter of his arrival
+        return arrivedIn;
     }
     /**
      *  Used by Waiter to return to the Bar and reset the alternative (action to be done).
@@ -80,7 +93,8 @@ public class Bar {
      *  Used by Student to 
      */
     public synchronized void callTheWaiter() {
-        
+        alternative = 'o';
+        this.notifyAll();                                                       // First Student calls the Waiter once everyone has chosen their courses
     }
     /**
      *  Used by Chef to 
@@ -90,6 +104,14 @@ public class Bar {
             repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
         }
         
+        while(alternative != '\0') {
+            try {
+                this.wait();                                                    // Chef blocks if and while Waiter is occupied (delivering another portion at the Table)
+            } catch (InterruptedException ie) {}
+        }
+        
+        alternative = 'p';
+        this.notifyAll();                                                       // Chef notifies the Waiter that the course is ready to be delivered
     }
     /**
      *  Used by Student to 

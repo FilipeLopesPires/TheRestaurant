@@ -49,16 +49,25 @@ public class Chef extends Thread {
     public void run () {
         kitchen.watchTheNews();                                                 // WFAO
         kitchen.startPreparation();                                             // PTC
-        for(int nd=1; nd<=TheRestaurantMain.ncourses; nd++) {
-            kitchen.proceedToPresentation();                                    // DiTP
+        for(int nc=1; nc<=TheRestaurantMain.ncourses; nc++) {
+            kitchen.proceedToPresentation(nc);                                  // DiTP
+            /*
             for(int p=0; p<TheRestaurantMain.nstudents; p++) {
                 bar.alertTheWaiter();                                           // DeTP
                 if(!kitchen.haveAllPortionsBeenDelivered()) {
                     kitchen.haveNextPortionReady();
                 }
             }
+            */
+            while(true) {
+                if(kitchen.haveAllPortionsBeenDelivered()) {
+                    break;
+                }
+                bar.alertTheWaiter();                                           // DeTP
+                kitchen.haveNextPortionReady();
+            }
             if(!kitchen.hasTheOrderBeenCompleted()) {
-                kitchen.continuePreparation();
+                kitchen.continuePreparation();                                  // PTC
             }
         }
         kitchen.cleanUp();                                                      // CS
