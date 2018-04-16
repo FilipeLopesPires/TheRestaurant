@@ -1,0 +1,61 @@
+Genreal Repositry
+private void intlog(String filename);
+private void updatestate();;
+private void update();
+public void updateChefstate(int state);
+public void updatewaiterstate(int state);
+public void updatestudentstate(int state, int id);
+public void updatecrouse(int ncourse);
+
+
+Attributes
+state do chef
+state do waiter
+array de state students
+number of current course;
+
+
+SYnchronization
+there's no sync points in this area.
+
+
+Table needs an array of students ids that defines the order of students.
+When the student arrives, he's then blocked by a condition statement associated. 
+Meaning  each student has their own boolean meaning there's going to be an array 
+~of booleans that plays with array above.
+
+public sync void saluteTheCliente(){
+    ((waiter)Thread.currentThread()).setwaiterTState(PTM); //Thread.currentThread removes the idea to pass certain objects throw parameters.
+    repos.updateWaiterSTate(PTM)
+    waitForMenu[orderOut.out()??????]=false; // we cant use pos, will not guarantee so we need to transform array into a FIFO. 
+    notifyAll();
+    while(waitForHandlingMenu){ //waitForHandlingMenu inicialized as true in constructor.
+        try{wait();}catch(Exeption e){}
+    waitforHandlingMenu = true;
+}
+Synchronization
+Bar.enter() student releases waiter
+Table.enter() Student autoblocks. 
+table.salutetheCLient() waiter releases student
+bar.returntothebar() waiter autoblocks
+table.preparetheorder() the first student autoblocks.
+table.jointhetalk() other students autoblocks.
+<once everyone has chosen>  the first student is released
+bar.callthewaiter() first student releases releases waiter 
+table.jointhetalk() first student autoblocks.
+kitchen.handthenotetothechef() releases chef
+bar.alertthewaiter() chef releases waiter
+kitchen.havenextportionready() chef autocblocks
+kitchen.collectportion() waiter releases chef and autoblocks
+table.deliverportion() waiter blocks if students are still eating
+<once every has been served> waiter releases the students
+<once everyone has finished the current course> last one eating releases waiter
+table.endeating() last student releases the waiter, every student autoblocks if not the last course
+table.presentthebill() waiter autoblocks
+table.honourthebill() last student releases waiter and all students
+exit
+ 
+
+
+
+

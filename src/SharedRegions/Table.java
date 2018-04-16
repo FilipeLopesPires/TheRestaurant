@@ -1,8 +1,11 @@
 package SharedRegions;
+import Assets.Meals;
 import Main.*;
 import Entities.*;
 import java.util.Stack;
 import genclass.GenericIO;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * 
@@ -23,12 +26,14 @@ public class Table {
     private boolean readyToGetThePad;                                           // tells the First Student if the Waiter is ready to recieve the order
     private int deliveredPortions;                                              // tells the Students how many portions have been delivered
     private int currentCourse;                                                  // tells the Students which course are they currently having
+    private HashMap<Integer,Meals> group_order;
     
     /**
      *  Constructor
      *  Allocates a new Table Shared Region.
      */
     public Table(GeneralRepository repo){
+        group_order = new HashMap<>();
         this.repo = repo;
         toBeSaluted = new Stack<>();
         chosenStudents = 0;
@@ -99,13 +104,15 @@ public class Table {
     /** 
      *  Used by Student to 
      */
-    public synchronized void informCompanion() {
+    public synchronized void informCompanion(int ID) {
         try {
             Thread.sleep((int) (10 * Math.random ()));                          // simulates time of informing the companion
         } catch (Exception e) {}
         
         chosenStudents++;
+        group_order.put(ID, Meals.NULL);
         this.notifyAll();                                                       // Student notifies First Student of his choice
+        
     }
     /**
      *  Used by Student to 
@@ -124,7 +131,8 @@ public class Table {
     /**
      *  Used by Student to 
      */
-    public synchronized void prepareTheOrder() {
+    public synchronized void prepareTheOrder(int ID) {
+        group_order.put(ID,Meals.NULL);
         try {
             this.wait();                                                        // First Student waits while others choose their courses
         } catch (InterruptedException ie) {}
@@ -132,12 +140,13 @@ public class Table {
     /**
      *  Used by Waiter to 
      */
-    public synchronized void getThePad() {
+    public synchronized HashMap<Integer,Meals> getThePad() {
         if (((Waiter)Thread.currentThread()).setWaiterState(Waiter.WaiterState.TTO) ) {
             repo.updateWaiterState(((Waiter)Thread.currentThread()).getWaiterState());
         }
         readyToGetThePad = true;
         this.notifyAll();                                                       // sinchronization of Waiter going to the Table and First Student describing the order
+        return group_order;
     }
     /**
      *  Used by Student to 

@@ -1,7 +1,9 @@
 package SharedRegions;
+import Assets.Meals;
 import Main.*;
 import Entities.*;
 import genclass.GenericIO;
+import java.util.HashMap;
 
 /**
  * 
@@ -17,6 +19,7 @@ public class Kitchen {
      */
     
     private static GeneralRepository repo;                                      // Restaurant's Repository
+    private HashMap<Integer,Meals> group_order;
     private boolean order;                                                      // tells the Chef when an order is delivered
     private boolean portionReady;                                               // tells the Waiter if the current portion is ready to be delivered at the table
     private int deliveredPortions;                                              // tells the Chef how many portions of the current course have been delivered
@@ -53,11 +56,12 @@ public class Kitchen {
     /**
      *  Used by Waiter to 
      */
-    public synchronized void handTheNoteToTheChef() {
+    public synchronized void handTheNoteToTheChef(HashMap<Integer,Meals> orders) {
         if (((Waiter)Thread.currentThread()).setWaiterState(Waiter.WaiterState.PTO) ) {
             repo.updateWaiterState(((Waiter)Thread.currentThread()).getWaiterState());
         }
         order = true;
+        this.group_order = orders;                                              // Chef now knows the students' orders
         this.notifyAll();                                                       // Waiter notifies the Chef that an order has been delivered
     }
     /**

@@ -1,6 +1,8 @@
 package Entities;
+import Assets.Meals;
 import Main.*;
 import SharedRegions.*;
+import java.util.HashMap;
 
 /**
  * 
@@ -61,8 +63,8 @@ public class Waiter extends Thread {
                     bar.returnToTheBar();
                     break;
                 case 'o':
-                    table.getThePad();                                          // TTO
-                    kitchen.handTheNoteToTheChef();                             // PTO
+                    HashMap<Integer,Meals> order = table.getThePad();           // TTO The waiter passes the order to the kitchen
+                    kitchen.handTheNoteToTheChef(order);                        // PTO
                     bar.returnToTheBar();
                     break;
                 case 'p':

@@ -1,6 +1,8 @@
 package Entities;
+import Assets.Meals;
 import Main.*;
 import SharedRegions.*;
+import java.util.ArrayList;
 
 /**
  * 
@@ -33,6 +35,7 @@ public class Student extends Thread {
     private StudentState studentState;                                          // Student Thread's State
     private TheRestaurantMain.ArrivalOrder arrivedIn;                           // Student Thread's place of arrival
     
+    
     /**
      *  Constructor
      *  Allocates a new Student Thread object, incrementing the static variable nstudents with one unit and defining the Student Thread ID.
@@ -59,16 +62,16 @@ public class Student extends Thread {
         walkABit();                                                             // GTTR
         arrivedIn = bar.enter();
         table.enter();                                                          // TASATT
-        table.readTheMenu();                                                    // STC
-        if(arrivedIn == TheRestaurantMain.ArrivalOrder.FIRST) {
+        table.readTheMenu();                                                    // STC  
+        if(arrivedIn == TheRestaurantMain.ArrivalOrder.FIRST) {                                            
             while(!table.hasEverybodyChosen()) {                                // OTO
-                table.prepareTheOrder();                                        
+                table.prepareTheOrder(this.ID);                                        
             }
             bar.callTheWaiter();
-            table.describeTheOrder();
+            table.describeTheOrder();                                           // Passes the entire Array of orders incluiding his to the waiter
             table.joinTheTalk();                                                // CWC
         } else {
-            table.informCompanion();
+            table.informCompanion(this.ID);                                 // Return his order to the First Studen
             table.joinTheTalk();                                                // CWC
         }
         for(int c=0; c<TheRestaurantMain.ncourses; c++) {
