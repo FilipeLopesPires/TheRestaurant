@@ -25,7 +25,7 @@ public class Chef extends Thread {
     
     private static Kitchen kitchen;                                             // Kitchen Shared Region Access Point
     private static Bar bar;                                                     // Bar Shared Region Access Point
-    private ChefState chefState;                                                // Thread's State
+    private volatile ChefState chefState;                                                // Thread's State
     
     /**
      *  Constructor
@@ -60,15 +60,22 @@ public class Chef extends Thread {
             }
             */
             while(true) {
+               //  System.out.println(nc+"Have all portions been delivered - "+kitchen.haveAllPortionsBeenDelivered());
                 if(kitchen.haveAllPortionsBeenDelivered()) {
                     break;
                 }
                 bar.alertTheWaiter();                                           // DeTP
                 kitchen.haveNextPortionReady();
+               
+               
+                
             }
-            if(!kitchen.hasTheOrderBeenCompleted()) {
+          //  System.out.println(nc+"Has order been completed"+kitchen.hasTheOrderBeenCompleted());
+           if(!kitchen.hasTheOrderBeenCompleted()) {
+             //   System.out.println("Done");
                 kitchen.continuePreparation();                                  // PTC
             }
+            
         }
         kitchen.cleanUp();                                                      // CS
     }

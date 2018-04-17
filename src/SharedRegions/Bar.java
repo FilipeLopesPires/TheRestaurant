@@ -88,11 +88,13 @@ public class Bar {
     public synchronized void returnToTheBar() { 
         alternative = '\0';
         this.notifyAll();                                                       // Waiter notifies anyone that is waiting for him
+        //try{wait();}catch(Exception e){e.printStackTrace();}
     }
     /**
      *  Used by Student to 
      */
     public synchronized void callTheWaiter() {
+        
         alternative = 'o';
         this.notifyAll();                                                       // First Student calls the Waiter once everyone has chosen their courses
     }
@@ -100,11 +102,13 @@ public class Bar {
      *  Used by Chef to 
      */
     public synchronized void alertTheWaiter() {
+        
         if (((Chef)Thread.currentThread()).setChefState(Chef.ChefState.DeTP) ) {
             repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
         }
         
         while(alternative != '\0') {
+           
             try {
                 this.wait();                                                    // Chef blocks if and while Waiter is occupied (delivering another portion at the Table)
             } catch (InterruptedException ie) {}

@@ -65,13 +65,14 @@ public class Student extends Thread {
         table.readTheMenu();                                                    // STC  
         if(arrivedIn == TheRestaurantMain.ArrivalOrder.FIRST) {                                            
             while(!table.hasEverybodyChosen()) {                                // OTO
-                table.prepareTheOrder(this.ID);                                        
+                table.prepareTheOrder();                                        
             }
+           // System.out.println("Student calling the waiter");
             bar.callTheWaiter();
             table.describeTheOrder();                                           // Passes the entire Array of orders incluiding his to the waiter
             table.joinTheTalk();                                                // CWC
         } else {
-            table.informCompanion(this.ID);                                 // Return his order to the First Studen
+            table.informCompanion();                                            // Return his order to the First Studen
             table.joinTheTalk();                                                // CWC
         }
         for(int c=0; c<TheRestaurantMain.ncourses; c++) {

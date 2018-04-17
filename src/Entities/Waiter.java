@@ -63,16 +63,19 @@ public class Waiter extends Thread {
                     bar.returnToTheBar();
                     break;
                 case 'o':
-                    HashMap<Integer,Meals> order = table.getThePad();           // TTO The waiter passes the order to the kitchen
-                    kitchen.handTheNoteToTheChef(order);                        // PTO
+                    table.getThePad();                                          // TTO 
+                    kitchen.handTheNoteToTheChef();                             // PTO
                     bar.returnToTheBar();
                     break;
                 case 'p':
-                    while(!kitchen.haveAllStudentsBeenServed()) {               
+                    while(!kitchen.haveAllStudentsBeenServed()) {  
+                        if(!kitchen.haveAllPortionsBeenDelivered()){
                         kitchen.collectPortion();                               // WFP
                         table.deliverPortion();
+                        }
                         bar.returnToTheBar();
                     }
+                    bar.returnToTheBar();
                     break;
                 case 'b':
                     bar.prepareTheBill();                                       // PTB
@@ -82,7 +85,9 @@ public class Waiter extends Thread {
                 case 'g':
                     bar.sayGoodbye();
                     break;
+               
             }
+            
         }
     }
     

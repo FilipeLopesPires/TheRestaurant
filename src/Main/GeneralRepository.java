@@ -85,6 +85,7 @@ public class GeneralRepository {
         GenericIO.writelnString();
         
         fileLog.close();
+      //  try{Thread.sleep(1000);}catch(Exception e){e.printStackTrace();}
     }
     
     private void updateCourse() {
@@ -94,6 +95,7 @@ public class GeneralRepository {
         }
         fileLog.writelnString("Course no." + currentCourse);
         GenericIO.writelnString("Course no." + currentCourse);
+        fileLog.close();
     }
     
     public synchronized void updateChefState(Chef.ChefState newChefState) {

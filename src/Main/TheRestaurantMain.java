@@ -16,7 +16,7 @@ public class TheRestaurantMain {
      *  Program's Data
      */
     
-    public static int nstudents = 7;                                            // number of Students that are going to the Restaurant
+    public static int nstudents = 3;                                            // number of Students that are going to the Restaurant
     public static int ncourses = 3;                                             // number of courses per Student
     public static enum ArrivalOrder {                                           // Order of Arrival Enum
         FIRST,
@@ -50,6 +50,7 @@ public class TheRestaurantMain {
         
         chef = new Chef(kitchen, bar);
         waiter = new Waiter(kitchen, bar, table);
+        
         for(int i=0; i<nstudents; i++) {
             students[i] = new Student(bar, table);
         }
