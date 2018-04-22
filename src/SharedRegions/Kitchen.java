@@ -7,7 +7,7 @@ import Entities.*;
  *  General Description:
  *      Definition of the Kitchen Shared Region - monitor-based solution.
  * 
- *  @authors Filipe Pires (85122) & Isaac dos Anjos (78191)
+ *  Authors Filipe Pires (85122) S Isaac dos Anjos (78191)
  */
 public class Kitchen {
     
@@ -19,8 +19,8 @@ public class Kitchen {
    
     private volatile boolean order,                                             // tells the Chef when an order is delivered
                              portionReady;                                      // tells the Waiter if the current portion is ready to be delivered at the table
-    private volatile int deliveredPortions,                                     // tells the Chef how many portions of the current course have been delivered
-                         totalPortions;                                         // tells the Chef how many portions have been delivered (of all courses)
+    private volatile int     deliveredPortions,                                 // tells the Chef how many portions of the current course have been delivered
+                             totalPortions;                                     // tells the Chef how many portions have been delivered (of all courses)
     
     /**
      *  Constructor
@@ -60,9 +60,8 @@ public class Kitchen {
         if (((Waiter)Thread.currentThread()).setWaiterState(Waiter.WaiterState.PTO) ) {
             repo.updateWaiterState(((Waiter)Thread.currentThread()).getWaiterState());
         }
-        
-        order = true;                                                           // Chef now knows the students' orders
-        this.notify();                                                          // Waiter notifies the Chef that an order has been delivered
+        order = true;                                                           // Chef now knows the students' orders                                            
+        this.notify();                                                          // Waiter notifies the Chef that an order has been delivered     
     }
     
     /**
@@ -81,7 +80,7 @@ public class Kitchen {
     /**
      *  Used by Chef to start dishing the portions of the current course.
      * 
-     *  @param int variable holding the number of the current course.
+     *  @param nCourse integer variable holding the number of the current course.
      */
     public synchronized void proceedToPresentation(int nCourse) {
         if (((Chef)Thread.currentThread()).setChefState(Chef.ChefState.DiTP) ) {
@@ -89,7 +88,6 @@ public class Kitchen {
         }
         repo.updateCourse(nCourse);                                             
         
-       
         deliveredPortions = 0;
     }
     
@@ -112,14 +110,11 @@ public class Kitchen {
         if (((Chef)Thread.currentThread()).setChefState(Chef.ChefState.DiTP) ) {
             repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
         }
-        
-        if(portionReady) {
+        if(portionReady)
             try{wait();}catch(Exception e){}
-        }
         
         portionReady = true;
         this.notifyAll();                                                       // Chef notifies the Waiter that the portion is ready to be delivered at the Table
-       
     }
     
     /**
@@ -176,7 +171,6 @@ public class Kitchen {
         try {
             Thread.sleep((int) (1000 * Math.random ()));                        // simulates time of preparing the 2nd & 3r courses
         } catch (Exception e) {}
-        
     }
     
     /**

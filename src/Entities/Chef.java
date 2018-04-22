@@ -7,12 +7,16 @@ import SharedRegions.*;
  *  General Description:
  *      Definition of the Chef Thread - monitor-based solution.
  *
- *  @authors Filipe Pires (85122) & Isaac dos Anjos (78191)
+ *  Authors Filipe Pires (85122) and Isaac dos Anjos (78191)
  */
 public class Chef extends Thread {
 
     /**
      *  Internal Data
+     */
+    
+    /**
+     *  Internal Enumerate holding all the possible states of the entity.
      */
     public enum ChefState {                                                     // Internal State Enum
         WFAO,
@@ -53,15 +57,19 @@ public class Chef extends Thread {
             kitchen.proceedToPresentation(nc);                                  // DiTP
 
             while (true) {
-                if (kitchen.haveAllPortionsBeenDelivered()) {
+
+                if (kitchen.haveAllPortionsBeenDelivered()) {                   
                     break;
                 }
                 bar.alertTheWaiter();                                           // DeTP
                 kitchen.haveNextPortionReady();                                 // DiTP
             }
-            if (!kitchen.hasTheOrderBeenCompleted()) {
+
+            if (!kitchen.hasTheOrderBeenCompleted()) {                          // DeTP
+
                 kitchen.continuePreparation();                                  // PTC
             }
+
         }
         kitchen.cleanUp();                                                      // CS
     }
@@ -80,9 +88,10 @@ public class Chef extends Thread {
     }
 
     /**
-     *  Sets a new state for the Chef Thread if the current state is different from the new state.
+     *  Sets a new state for the Chef Thread if the current state is different from the new state. Returns true if change of state is successful, false otherwise.
      *
      *  @param newChefState State to replace the current Thread's state.
+     *  @return boolean variable holding the result of the method's execution.
      */
     public boolean setChefState(ChefState newChefState) {
         if (chefState != newChefState) {
@@ -91,4 +100,5 @@ public class Chef extends Thread {
         }
         return false;
     }
+
 }

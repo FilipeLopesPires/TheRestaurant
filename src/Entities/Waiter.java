@@ -2,11 +2,12 @@ package Entities;
 
 import SharedRegions.*;
 
+
 /**
  *  General Description:
  *      Definition of the Waiter Thread - monitor-based solution.
  *
- *  @authors Filipe Pires (85122) & Isaac dos Anjos (78191)
+ *  Authors Filipe Pires (85122) and Isaac dos Anjos (78191)
  */
 public class Waiter extends Thread {
 
@@ -14,6 +15,9 @@ public class Waiter extends Thread {
      *  Internal Data
      */
     
+    /**
+     *  Internal Enumerate holding all the possible states of the entity.
+     */
     public enum WaiterState {                                                   // Internal State Enum
         AS,
         PTM,
@@ -27,7 +31,7 @@ public class Waiter extends Thread {
     private Kitchen kitchen;                                                    // Kitchen Shared Region Access Point
     private Bar bar;                                                            // Bar Shared Region Access Point
     private Table table;                                                        // Table Shared Region Access Point
-    private volatile WaiterState waiterState;                                   // Thread's State
+    private WaiterState waiterState;                                            // Thread's State
     private char alternative;                                                   // tells the Waiter what to do
     
     /**
@@ -56,7 +60,7 @@ public class Waiter extends Thread {
         while ((alternative = bar.lookAround()) != 'e') {                       // AS
             switch (alternative) {
                 case 's':
-                    table.saluteTheStudent();                                   // PTM
+                    table.saluteTheStudent();                                   // PTM 
                     bar.returnToTheBar();
                     break;
                 case 'o':
@@ -77,11 +81,9 @@ public class Waiter extends Thread {
                     bar.returnToTheBar();
                     break;
                 case 'g':
-                    bar.sayGoodbye();
+                    bar.sayGoodbye();                                           
                     break;
-
             }
-
         }
     }
 
@@ -99,9 +101,10 @@ public class Waiter extends Thread {
     }
 
     /**
-     *  Sets a new state for the Waiter Thread if current state is different from the new state.
+     *  Sets a new state for the Waiter Thread if current state is different from the new state. Returns true if change of state is successful, false otherwise.
      *
      *  @param newWaiterState State to replace the current Thread's state.
+     *  @return boolean variable holding the result of the method's execution.
      */
     public boolean setWaiterState(WaiterState newWaiterState) {
         if (waiterState != newWaiterState) {

@@ -7,7 +7,7 @@ import genclass.*;
  *  General description:
  *      Definition of the General Repository for the Restaurant - monitor-based solution.
  * 
- *  @authors Filipe Pires (85122) & Isaac dos Anjos (78191)
+ *  Authors Filipe Pires (85122) and Isaac dos Anjos (78191)
  */
 public class GeneralRepository {
     
@@ -15,14 +15,14 @@ public class GeneralRepository {
      *  Internal Data
      */
     
-    private Chef.ChefState chefState;
-    private Waiter.WaiterState waiterState;
-    private Student.StudentState[] studentState;
-    private String[] allEntities;
-    private int currentCourse;
+    private Chef.ChefState chefState;                                           // Chef's current state
+    private Waiter.WaiterState waiterState;                                     // Waiter's current state
+    private Student.StudentState[] studentState;                                // Student's current state
+    private String[] allEntities;                                               // Backup array of states
+    private int currentCourse;                                                  // Current course
     
-    private TextFile fileLog;
-    private String filename;
+    private TextFile fileLog;                                                   // Log File Object
+    private String filename;                                                    // Name of file
     
     /**
      *  General Repository's Methods
@@ -96,6 +96,7 @@ public class GeneralRepository {
         GenericIO.writelnString();
         
         fileLog.close();
+      //  try{Thread.sleep(1000);}catch(Exception e){e.printStackTrace();}
     }
     
     /**
@@ -135,26 +136,11 @@ public class GeneralRepository {
      *  Internal update of the information about a Student's state.
      * 
      *  @param newStudentState StudentState variable holding the new state.
-     *  @param int variable holding the ID of the Student who's sate was changed.
+     *  @param studentID integer variable holding the ID of the Student who's sate was changed.
      */
     public synchronized void updateStudentState(Student.StudentState newStudentState, int studentID) {
         this.studentState[studentID-1] = newStudentState;
         updateLog();
-    }
-    
-    /**
-     *  Internal update of the information about all Student's states at once.
-     * 
-     *  @param newStudentState StudentState variable holding the new state.
-     *  @param int variable holding the ID of the Student who called the method.
-     */
-    public synchronized void updateAllStudentStates(Student.StudentState newStudentState, int studentID) {
-        if(this.studentState[studentID-1] != newStudentState) {
-            for(int i=0; i<TheRestaurantMain.nstudents; i++) {
-                studentState[i] = newStudentState;
-            }
-            updateLog();
-        }
     }
     
     /**
@@ -168,5 +154,18 @@ public class GeneralRepository {
         }
         currentCourse = nCourse;
         updateCourse();
+    }
+    
+    /**
+     *  Final verification of all thread states. Waiter checks if everyone has left and closes the Restaurant. Returns true if all Students have left the Restaurant, false if not.
+     * 
+     *  @return boolean variable holding the result of the method's execution.
+     */
+    public boolean HaveAllStudentLeft(){
+        for(int i=0; i<TheRestaurantMain.nstudents; i++) {
+                if(studentState[i] != Student.StudentState.GH)
+                    return false;
+            }
+        return true;
     }
 }

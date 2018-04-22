@@ -8,7 +8,7 @@ import Entities.*;
  *  General Description:
  *      Definition of the Bar Shared Region - monitor-based solution.
  * 
- *  @authors Filipe Pires (85122) & Isaac dos Anjos (78191)
+ *  Authors Filipe Pires (85122) and Isaac dos Anjos (78191)
  */
 public class Bar {
     
@@ -27,8 +27,8 @@ public class Bar {
                              * 'e' means end
                              */
     private volatile int arrivedStudents,                                       // aux var to know in which place did each Student arrive
-                         students_on_hold,
-                         signalled_once;
+                         students_on_hold,                                      // how many students are on hold
+                         signalled_once;                                        // guarantee that signal the waiter goes off once
     
     /**
      *  Constructor
@@ -53,14 +53,18 @@ public class Bar {
      *  @return Character variable representing the current alternative
      */
     public synchronized char lookAround() {
-        ((Waiter)Thread.currentThread()).setWaiterState(Waiter.WaiterState.AS);
-        repo.updateWaiterState(((Waiter)Thread.currentThread()).getWaiterState());
+        if (((Waiter)Thread.currentThread()).setWaiterState(Waiter.WaiterState.AS) ) {
+            repo.updateWaiterState(((Waiter)Thread.currentThread()).getWaiterState());
+        }
+        
+        if(repo.HaveAllStudentLeft() && alternative != 'e')
+            alternative='g';                                                    //Waiter says goodbye to everyone
         
         if(students_on_hold>0){
             this.notifyAll();
+           
             students_on_hold=0;
         }
-        
         while(alternative == '\0' ) {
             try {
                 this.wait();                                                    // Waiter blocks while nothing happens
@@ -86,6 +90,7 @@ public class Bar {
             arrivedIn = TheRestaurantMain.ArrivalOrder.MIDDLE;
            
         }
+        this.notifyAll();
         while(alternative != '\0' ) {
             try {
                 students_on_hold++;
@@ -105,6 +110,7 @@ public class Bar {
         if (((Waiter)Thread.currentThread()).setWaiterState(Waiter.WaiterState.AS) ) {
             repo.updateWaiterState(((Waiter)Thread.currentThread()).getWaiterState());
         }
+        
         alternative = '\0';
         this.notifyAll();                                                       // Waiter notifies anyone that is waiting for him
     }
@@ -144,9 +150,8 @@ public class Bar {
         }
         signalled_once++;
         
-        while(alternative != '\0') {
+        while(alternative != '\0')
             try{wait();}catch(Exception e){}                                    // Student blocks if and while Waiter is occupied
-        }
         
         alternative = 'b';
         this.notifyAll();                                                       // Student signals the Waiter to pay the bill
@@ -159,14 +164,13 @@ public class Bar {
         if (((Waiter)Thread.currentThread()).setWaiterState(Waiter.WaiterState.PTB) ) {
             repo.updateWaiterState(((Waiter)Thread.currentThread()).getWaiterState());
         }
-        
     }
     
     /**
      *  Used by Waiter to say goodbye to each and every Student.
      */
     public synchronized void sayGoodbye() {
-        
+        alternative='e';
     }
     
     /**
@@ -186,4 +190,5 @@ public class Bar {
      *  @param alternative Character variable holding the new alternative.
      */
     public void setAlternative(char alternative) { this.alternative = alternative; }
+    
 }

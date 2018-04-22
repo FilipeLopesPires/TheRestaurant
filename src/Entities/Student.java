@@ -7,7 +7,7 @@ import SharedRegions.*;
  *  General Description: 
  *      Definition of the Student Thread - monitor-based solution.
  *
- *  @authors Filipe Pires (85122) & Isaac dos Anjos (78191)
+ *  Authors Filipe Pires (85122) and Isaac dos Anjos (78191)
  */
 public class Student extends Thread {
 
@@ -15,6 +15,9 @@ public class Student extends Thread {
      *  Internal Data
      */
     
+    /**
+     *  Internal Enumerate holding all the possible states of the entity.
+     */
     public enum StudentState {                                                  // Internal State Enum
         GTTR,
         TASATT,
@@ -30,7 +33,7 @@ public class Student extends Thread {
     private static Table table;                                                 // Table Shared Region Access Point
     private static int nstudents = 0;                                           // Number of created Student Thread objects (to define the ID)
     private final int ID;                                                       // Student Thread's ID
-    private volatile StudentState studentState;                                 // Student Thread's State
+    private StudentState studentState;                                          // Student Thread's State
     private TheRestaurantMain.ArrivalOrder arrivedIn;                           // Student Thread's place of arrival
 
     /**
@@ -57,35 +60,38 @@ public class Student extends Thread {
     @Override
     public void run() {
         walkABit();                                                             // GTTR
-        arrivedIn = bar.enter();
+        arrivedIn = bar.enter();                                                
         table.enter();                                                          // TASATT
         table.readTheMenu();                                                    // STC  
         if (arrivedIn == TheRestaurantMain.ArrivalOrder.FIRST) {
-            while (!table.hasEverybodyChosen()) {                               // OTO
+            while (!table.hasEverybodyChosen()) {                                // OTO
                 table.prepareTheOrder();
             }
+            
             bar.callTheWaiter();
-            table.describeTheOrder();
+            table.describeTheOrder();                                           
             table.joinTheTalk();                                                // CWC
         } else {
-            table.informCompanion();
+            table.informCompanion();                                            
             table.joinTheTalk();                                                // CWC
         }
-        
         for (int c = 0; c < TheRestaurantMain.ncourses; c++) {
             table.startEating(c + 1);                                           // ETM
         }
-        table.endEating();                                                      // CWC
-        
-        if (table.hasEverybodyFinished()) {
+              table.endEating();                                                // CWC
+        if (table.hasEverybodyFinished())                                        
             bar.signalTheWaiter();
-        }
+                                                                                
         
+            
+
         if (arrivedIn == TheRestaurantMain.ArrivalOrder.LAST) {
             table.shouldHaveArrivedEarlier();                                   // PTB
-            table.honorTheBill();
+            table.honorTheBill();                                               
         }
+
         table.exit();                                                           // GH
+
     }
 
     /**
@@ -124,15 +130,6 @@ public class Student extends Thread {
     public StudentState getStudentState() {
         return studentState;
     }
-    
-    /**
-     *  Returns the place of arrival of the Student.
-     * 
-     *  @return element from the ArrivalOrder enumerate holding the place of arrival of the Student.
-     */
-    public TheRestaurantMain.ArrivalOrder getArrivalOrder(){
-        return arrivedIn;
-    }
 
     /**
      *  Sets a new state for the Student Thread if current state is different from the new state. Returns true if state is changed, false if not.
@@ -147,4 +144,14 @@ public class Student extends Thread {
         }
         return false;
     }
+    
+    /**
+     *  Returns the place of arrival of the Student.
+     * 
+     *  @return element from the ArrivalOrder enumerate holding the place of arrival of the Student.
+     */
+    public TheRestaurantMain.ArrivalOrder getArrivalOrder(){
+        return arrivedIn;
+    }
+
 }
