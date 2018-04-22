@@ -1,7 +1,6 @@
 package Main;
 import Entities.*;
 import SharedRegions.*;
-import genclass.GenericIO;
 
 /**
  *
@@ -16,7 +15,7 @@ public class TheRestaurantMain {
      *  Program's Data
      */
     
-    public static int nstudents = 3;                                            // number of Students that are going to the Restaurant
+    public static int nstudents = 7;                                            // number of Students that are going to the Restaurant
     public static int ncourses = 3;                                             // number of courses per Student
     public static enum ArrivalOrder {                                           // Order of Arrival Enum
         FIRST,
@@ -65,6 +64,13 @@ public class TheRestaurantMain {
         
         /* Wait for the End of the Simulation */
         
-        // ...
+        try {
+            chef.join();
+            waiter.join();
+            for(Student s: students) {
+                s.join();
+            }
+        } catch (InterruptedException ie) {}
     }
+    
 }

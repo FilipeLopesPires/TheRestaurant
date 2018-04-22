@@ -1,7 +1,6 @@
 package Main;
 import Entities.*;
-import genclass.GenericIO;
-import genclass.TextFile;
+import genclass.*;
 
 /**
  *
@@ -29,6 +28,12 @@ public class GeneralRepository {
      *  General Repository's Methods
      */
     
+    /**
+     *  Constructor
+     *  Allocates a new GeneralRepository Shared Region.
+     * 
+     *  @param filename name of the text file on which all updates will be saved to.
+     */
     public GeneralRepository(String filename) {
         studentState = new Student.StudentState[TheRestaurantMain.nstudents];
         allEntities = new String[TheRestaurantMain.nstudents+2];
@@ -37,6 +42,9 @@ public class GeneralRepository {
         initLog();
     }
     
+    /**
+     *  Initialization of the log file, creating the title and the heads of the file.
+     */
     private void initLog() {
         if(!fileLog.openForWriting(null,filename)) {
             GenericIO.writelnString("An error occurred when opening the file. Program will end now.");
@@ -58,6 +66,9 @@ public class GeneralRepository {
         fileLog.close();
     }
     
+    /**
+     *  Update of the current states of all entities, saving them on the text file.
+     */
     private void updateLog() {
         if(chefState==null || waiterState==null) {
             return;
@@ -85,9 +96,11 @@ public class GeneralRepository {
         GenericIO.writelnString();
         
         fileLog.close();
-      //  try{Thread.sleep(1000);}catch(Exception e){e.printStackTrace();}
     }
     
+    /**
+     *  Update of the current course, saving it on the text file.
+     */
     private void updateCourse() {
         if(!fileLog.openForAppending(null,filename)) {
             GenericIO.writelnString("An error occurred when opening the file. Program will end now.");
@@ -98,21 +111,43 @@ public class GeneralRepository {
         fileLog.close();
     }
     
+    /**
+     *  Internal update of the information about the Chef's state.
+     * 
+     *  @param newChefState ChefState variable holding the new state.
+     */
     public synchronized void updateChefState(Chef.ChefState newChefState) {
         this.chefState = newChefState;
         updateLog();
     }
     
+    /**
+     *  Internal update of the information about the Waiter's state.
+     * 
+     *  @param newWaiterState WaiterState variable holding the new state.
+     */
     public synchronized void updateWaiterState(Waiter.WaiterState newWaiterState) {
         this.waiterState = newWaiterState;
         updateLog();
     }
     
+    /**
+     *  Internal update of the information about a Student's state.
+     * 
+     *  @param newStudentState StudentState variable holding the new state.
+     *  @param int variable holding the ID of the Student who's sate was changed.
+     */
     public synchronized void updateStudentState(Student.StudentState newStudentState, int studentID) {
         this.studentState[studentID-1] = newStudentState;
         updateLog();
     }
     
+    /**
+     *  Internal update of the information about all Student's states at once.
+     * 
+     *  @param newStudentState StudentState variable holding the new state.
+     *  @param int variable holding the ID of the Student who called the method.
+     */
     public synchronized void updateAllStudentStates(Student.StudentState newStudentState, int studentID) {
         if(this.studentState[studentID-1] != newStudentState) {
             for(int i=0; i<TheRestaurantMain.nstudents; i++) {
@@ -122,6 +157,11 @@ public class GeneralRepository {
         }
     }
     
+    /**
+     *  Internal update of the information about the current course.
+     *  
+     *  @param nCourse int variable holding the new course.
+     */
     public synchronized void updateCourse(int nCourse) {
         if(currentCourse==nCourse) {
             return;
@@ -129,5 +169,4 @@ public class GeneralRepository {
         currentCourse = nCourse;
         updateCourse();
     }
-    
 }
