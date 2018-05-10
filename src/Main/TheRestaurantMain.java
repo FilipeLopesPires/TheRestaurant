@@ -21,8 +21,17 @@ public class TheRestaurantMain {
      *  Internal Enumerate holding all the possible places of arrival at the Restaurant.
      */
     public static enum ArrivalOrder {                                           // Order of Arrival Enum
+        /**
+         *  First Student to arrive.
+         */
         FIRST,
+        /**
+         *  One of the Students arriving neither in first nor in last place.
+         */
         MIDDLE,
+        /**
+         *  Last Student to arrive.
+         */
         LAST;
     }
 
@@ -74,8 +83,6 @@ public class TheRestaurantMain {
             for (int i = 0; i < nstudents; i++) {
                 students[i].join();
             }
-        } catch (Exception e) {
-
-        }
+        } catch (Exception e) { }
     }
 }

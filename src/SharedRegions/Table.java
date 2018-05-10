@@ -52,21 +52,19 @@ public class Table {
      *  Used by Student to define his inital state of GTTR and walk to the Restaurant.
      */
     public synchronized void walkABit() {
-        repo.updateStudentState(((Student) Thread.currentThread()).getStudentState(), ((Student) Thread.currentThread()).getID());
+        if (((Student) Thread.currentThread()).setStudentState(Student.StudentState.GTTR)) {
+            repo.updateStudentState(((Student) Thread.currentThread()).getStudentState(), ((Student) Thread.currentThread()).getID());
+        }
     }
 
     /**
      *  Used by Student to sit at the table.
      */
     public synchronized void enter() {
-        if (((Student) Thread.currentThread()).setStudentState(Student.StudentState.TASATT)) {
-            repo.updateStudentState(((Student) Thread.currentThread()).getStudentState(), ((Student) Thread.currentThread()).getID());
-        }
-
-        toBeSaluted.push(1);
+        toBeSaluted.push(((Student) Thread.currentThread()).getID());
         this.notifyAll();                                                       // sinchronization of Student entering and Waiter going to salute him
 
-        while (!toBeSaluted.isEmpty()) {
+        while (toBeSaluted.contains(((Student) Thread.currentThread()).getID())) {  // !toBeSaluted.isEmpty() 
             try {
                 this.wait();                                                    // Student blocks while Waiter does not salute him
             } catch (InterruptedException ie) {
@@ -89,9 +87,7 @@ public class Table {
             }
         }
 
-        while (!toBeSaluted.isEmpty()) {
-            toBeSaluted.pop();
-        }
+        toBeSaluted.pop();
         this.notifyAll();                                                       // Waiter notifies Students when he salutes them
     }
 
@@ -111,19 +107,19 @@ public class Table {
         if (((Student) Thread.currentThread()).setStudentState(Student.StudentState.CWC)) {
             repo.updateStudentState(((Student) Thread.currentThread()).getStudentState(), ((Student) Thread.currentThread()).getID());
         }
+        
         try {
             Thread.sleep((int) (10 * Math.random()));                           // simulates time of informing the companion
-        } catch (Exception e) {
-        }
+        } catch (Exception e) {}
 
         chosenStudents++;
         this.notifyAll();                                                       // notifies First Student about his choice
     }
 
     /**
-     *  Used by Student to verify if everyone has made their choices for the courses. Returns true if so, false if not.
+     *  Used by Student to verify if everyone has made their choices for the courses. 
      * 
-     *  @return boolean variable holding the result of the method.
+     *  @return Returns true if every Student has chosen their courses, false if not.
      */
     public synchronized boolean hasEverybodyChosen() {
         if (((Student) Thread.currentThread()).setStudentState(Student.StudentState.OTO)) {
@@ -143,10 +139,10 @@ public class Table {
         if (((Student) Thread.currentThread()).setStudentState(Student.StudentState.OTO)) {
             repo.updateStudentState(((Student) Thread.currentThread()).getStudentState(), ((Student) Thread.currentThread()).getID());
         }
-
-        try {
-            this.wait();                                                        // First Student waits while others choose their courses
-        } catch (InterruptedException ie) {
+        if(!hasEverybodyChosen()) {
+            try {
+                this.wait();                                                        // First Student waits while others choose their courses
+            } catch (InterruptedException ie) {}
         }
     }
 
@@ -162,8 +158,7 @@ public class Table {
 
         try {                                                                   //No need for a while because at this point everyone is on hold except first student
             this.wait();
-        } catch (Exception e) {
-        }
+        } catch (Exception e) {}
     }
 
     /**
@@ -177,15 +172,13 @@ public class Table {
         while (!readyToGetThePad) {
             try {
                 wait();
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
         }
         this.notifyAll();                                                       // sinchronization of Waiter going to the Table and First Student describing the order
         
         try {
             Thread.sleep((int) (10 * Math.random()));                           // simulates time of describing the order to the Waiter
-        } catch (Exception e) {
-        }
+        } catch (Exception e) {}
     }
 
     /**
@@ -199,8 +192,7 @@ public class Table {
         while (currentCourse == 0 || currentCourse == TheRestaurantMain.ncourses || (currentCourse == TheRestaurantMain.ncourses + 1 && ((Student) Thread.currentThread()).getArrivalOrder() != TheRestaurantMain.ArrivalOrder.LAST)) {
             try {
                 wait();
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
         }
     }
 
@@ -222,35 +214,40 @@ public class Table {
      *  @param nc integer variable with the number of a course.
      */
     public synchronized void startEating(int nc) {
-        if (((Student) Thread.currentThread()).setStudentState(Student.StudentState.ETM)) {
-            repo.updateStudentState(((Student) Thread.currentThread()).getStudentState(), ((Student) Thread.currentThread()).getID());
-        }
-
         while (nc != currentCourse) {
             try {
                 this.wait();
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
         }
-
+        
         while (currentCourse == nc && deliveredPortions < TheRestaurantMain.nstudents) {
             try {
                 wait();
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
         }
+        
+        if (((Student) Thread.currentThread()).setStudentState(Student.StudentState.ETM)) {
+            repo.updateStudentState(((Student) Thread.currentThread()).getStudentState(), ((Student) Thread.currentThread()).getID());
+        }
+        this.notifyAll();
     }
 
     /**
      *  Used by Student to finish eating.
      */
     public synchronized void endEating() {
+        if(!repo.isEveryStudentEating()) {
+            try {
+                wait();
+            } catch (Exception e) {}
+        }
+        
         ate++;
         if (((Student) Thread.currentThread()).setStudentState(Student.StudentState.CWC)) {
             repo.updateStudentState(((Student) Thread.currentThread()).getStudentState(), ((Student) Thread.currentThread()).getID());
         }
 
-        if (ate == TheRestaurantMain.nstudents) {
+        if (ate == TheRestaurantMain.nstudents*3) {
             finished = true;
             currentCourse++;
             last_id = ((Student) Thread.currentThread()).getID();
@@ -258,9 +255,9 @@ public class Table {
     }
 
     /**
-     *  Used by Student to verify if every Student has finished eating. Returns true if so, false if not.
+     *  Used by Student to verify if everyone has finished eating. 
      * 
-     *  @return boolean variable holding the result of the method.
+     *  @return Returns true if every Student has finished eating, false if not.
      */
     public synchronized boolean hasEverybodyFinished() {
         if (finished && last_id == ((Student) Thread.currentThread()).getID()) {
@@ -271,8 +268,7 @@ public class Table {
         while (!finished) {
             try {
                 wait();
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
         }
         return false;
     }
@@ -291,8 +287,7 @@ public class Table {
         while (billattable) {
             try {
                 this.wait();
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
         }
     }
 
@@ -303,8 +298,7 @@ public class Table {
         while (!billattable) {
             try {
                 this.wait();
-            } catch (Exception e) {
-            }
+            } catch (Exception e) {}
         }
         
         if (((Student) Thread.currentThread()).setStudentState(Student.StudentState.PTB)) {

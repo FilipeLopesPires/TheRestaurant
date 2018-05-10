@@ -44,7 +44,9 @@ public class Kitchen {
      *  Used by Chef to wait for an order to be handed to him.
      */
     public synchronized void watchTheNews() {
-        repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
+        if(((Chef)Thread.currentThread()).setChefState(Chef.ChefState.WFAO) ) {
+            repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
+        }
         
         while(!order) {
             try {
@@ -66,8 +68,11 @@ public class Kitchen {
     
     /**
      *  Used by Chef to start preparing the order.
+     * 
+     * @param nCourse integer variable holding the number of the current course
      */
-    public synchronized void startPreparation() {
+    public synchronized void startPreparation(int nCourse) {
+        repo.updateCourse(nCourse);
         if (((Chef)Thread.currentThread()).setChefState(Chef.ChefState.PTC) ) {
             repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
         }
@@ -80,21 +85,21 @@ public class Kitchen {
     /**
      *  Used by Chef to start dishing the portions of the current course.
      * 
-     *  @param nCourse integer variable holding the number of the current course.
+     *  
      */
-    public synchronized void proceedToPresentation(int nCourse) {
+    public synchronized void proceedToPresentation() {
         if (((Chef)Thread.currentThread()).setChefState(Chef.ChefState.DiTP) ) {
             repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
         }
-        repo.updateCourse(nCourse);                                             
-        
+                                                   
+        portionReady = true;
         deliveredPortions = 0;
     }
     
     /**
-     *  Used by Chef to verify if all portions of the current course have been delivered. Returns true if so, false if not.
+     *  Used by Chef to verify if all portions of the current course have been delivered to the Waiter. 
      * 
-     *  @return boolean variable holding the information of if all portions have been delivered to the waiter.
+     *  @return Returns true if all portions of the current course have been delivered, false if not.
      */
     public synchronized boolean haveAllPortionsBeenDelivered() {
         if(deliveredPortions == TheRestaurantMain.nstudents) {
@@ -130,16 +135,16 @@ public class Kitchen {
                 this.wait();                                                    // Waiter blocks while Chef has not yet made next portion ready
             } catch (InterruptedException ie) {}
         }
+        deliveredPortions++; totalPortions++;
+        
         portionReady = false;
         this.notifyAll();                                                       // Waiter notifies the Chef once he collects the portion
-        
-        deliveredPortions++; totalPortions++;
     }
     
     /**
-     *  Used by Waiter to verify if all portions of the current course have been delivered. Returns true if so, false if not.
+     *  Used by Waiter to verify if all portions of the current course have been delivered to the Students.
      * 
-     *  @return boolean variable holding the information of if all portions have been delivered to the Students.
+     *  @return Returns true if all portions of the current course have been delivered, false if not.
      */
     public synchronized boolean haveAllStudentsBeenServed() {
         if(deliveredPortions == TheRestaurantMain.nstudents ) {
@@ -149,28 +154,34 @@ public class Kitchen {
     }
     
     /**
-     *  Used by Chef to verify if all portions from all courses have been delivered. Returns true if so, false if not.
+     *  Used by Chef to verify if all portions from all courses have been delivered to the Waiter.
      * 
-     *  @return boolean variable holding the information of if all portions from all courses have been delivered to the Waiter.
+     *  @return Returns true if all portions from all courses have been delivered, false if not.
      */
     public synchronized boolean hasTheOrderBeenCompleted() {
-       if(totalPortions == TheRestaurantMain.ncourses*TheRestaurantMain.nstudents){
-           return true;
-       }
+        if (((Chef)Thread.currentThread()).setChefState(Chef.ChefState.DeTP) ) {
+            repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
+        }
+        
+        if(totalPortions == TheRestaurantMain.ncourses*TheRestaurantMain.nstudents){
+            return true;
+        }
        return false;
     }
     
     /**
      *  Used by Chef to continue preparing the remaining courses from the order.
+     * 
+     * @param nCourse integer variable holding the number of the current course
      */
-    public synchronized void continuePreparation() {
-        if (((Chef)Thread.currentThread()).setChefState(Chef.ChefState.PTC) ) {
-            repo.updateChefState(((Chef)Thread.currentThread()).getChefState());
-        }
+    public synchronized void continuePreparation(int nCourse) {
+        repo.updateCourse(nCourse+1);
+        ((Chef)Thread.currentThread()).setChefState(Chef.ChefState.PTC);
         
         try {
             Thread.sleep((int) (1000 * Math.random ()));                        // simulates time of preparing the 2nd & 3r courses
         } catch (Exception e) {}
+        portionReady = true;
     }
     
     /**

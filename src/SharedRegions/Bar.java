@@ -50,14 +50,14 @@ public class Bar {
     /**
      *  Used by Waiter to return his current alternative (action to be done) or empty if there is nothing to be done.
      * 
-     *  @return Character variable representing the current alternative
+     *  @return Returns: '\0' if Waiter has nothing to do; 's' if there is a Student to salute; 'o' if there is an order to take; 'p' if Waiter needs to wait for a portion; 'b' if there is a bill to process; 'g' if there is a Student to say goodbye; 'e' if all activities have been executed.
      */
     public synchronized char lookAround() {
         if (((Waiter)Thread.currentThread()).setWaiterState(Waiter.WaiterState.AS) ) {
             repo.updateWaiterState(((Waiter)Thread.currentThread()).getWaiterState());
         }
         
-        if(repo.HaveAllStudentLeft() && alternative != 'e')
+        if(repo.haveAllStudentLeft() && alternative != 'e')
             alternative='g';                                                    //Waiter says goodbye to everyone
         
         if(students_on_hold>0){
@@ -75,11 +75,21 @@ public class Bar {
     }
     
     /**
-     *  Used by Student to inform the Waiter of his arrival and returns the Student's place of arrival.
+     *  Used by Student to inform the Waiter of his arrival.
      * 
-     *  @return Element from the ArrivalOrder Enumerate
+     *  @return Returns the Student's place of arrival (variable type = ArrivalOrder).
      */
     public synchronized TheRestaurantMain.ArrivalOrder enter() {
+        while(alternative != '\0') {
+            try {
+                this.wait();                                                    // Student blocks if and while Waiter is occupied (saluting another Student)
+            } catch (InterruptedException ie) {}
+        }
+        
+        if (((Student) Thread.currentThread()).setStudentState(Student.StudentState.TASATT)) {
+            repo.updateStudentState(((Student) Thread.currentThread()).getStudentState(), ((Student) Thread.currentThread()).getID());
+        }
+        
         TheRestaurantMain.ArrivalOrder arrivedIn;                               // tells a Student in which place did he arrive
         arrivedStudents++;
         if(arrivedStudents==1) {
@@ -100,6 +110,7 @@ public class Bar {
         
         alternative = 's';
         this.notifyAll();                                                       // Student notifies the Waiter of his arrival
+        
         return arrivedIn;
     }
     
@@ -178,17 +189,16 @@ public class Bar {
      */
     
     /**
-     *  Returns the current alternative (activity to be done) of the Waiter.
+     *  Getter function that serves as an auxiliar for the entities. 
      * 
-     *  @return Character variable holding the alternative.
+     *  @return Returns the Waiter's current alternative (activity to be done).
      */
     public char getAlternative() { return alternative; }
     
     /**
      *  Sets a new alternative for the Waiter.
      * 
-     *  @param alternative Character variable holding the new alternative.
+     *  @param alternative New alternative for the Waiter.
      */
     public void setAlternative(char alternative) { this.alternative = alternative; }
-    
 }

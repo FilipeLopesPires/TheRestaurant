@@ -96,11 +96,10 @@ public class GeneralRepository {
         GenericIO.writelnString();
         
         fileLog.close();
-      //  try{Thread.sleep(1000);}catch(Exception e){e.printStackTrace();}
     }
     
     /**
-     *  Update of the current course, saving it on the text file.
+     *  Update of the current course, saving it on the text file. The method also automatically updates Chef's state to Chef.ChefState.PTC.
      */
     private void updateCourse() {
         if(!fileLog.openForAppending(null,filename)) {
@@ -115,7 +114,7 @@ public class GeneralRepository {
     /**
      *  Internal update of the information about the Chef's state.
      * 
-     *  @param newChefState ChefState variable holding the new state.
+     *  @param newChefState state to replace Chef's current state.
      */
     public synchronized void updateChefState(Chef.ChefState newChefState) {
         this.chefState = newChefState;
@@ -125,7 +124,7 @@ public class GeneralRepository {
     /**
      *  Internal update of the information about the Waiter's state.
      * 
-     *  @param newWaiterState WaiterState variable holding the new state.
+     *  @param newWaiterState state to replace Waiter's current state.
      */
     public synchronized void updateWaiterState(Waiter.WaiterState newWaiterState) {
         this.waiterState = newWaiterState;
@@ -135,8 +134,8 @@ public class GeneralRepository {
     /**
      *  Internal update of the information about a Student's state.
      * 
-     *  @param newStudentState StudentState variable holding the new state.
-     *  @param studentID integer variable holding the ID of the Student who's sate was changed.
+     *  @param newStudentState state to replace Student's current state.
+     *  @param studentID ID of the Student who's sate was changed.
      */
     public synchronized void updateStudentState(Student.StudentState newStudentState, int studentID) {
         this.studentState[studentID-1] = newStudentState;
@@ -146,7 +145,7 @@ public class GeneralRepository {
     /**
      *  Internal update of the information about the current course.
      *  
-     *  @param nCourse int variable holding the new course.
+     *  @param nCourse course number to replace the old course.
      */
     public synchronized void updateCourse(int nCourse) {
         if(currentCourse==nCourse) {
@@ -154,17 +153,33 @@ public class GeneralRepository {
         }
         currentCourse = nCourse;
         updateCourse();
+        updateChefState(Chef.ChefState.PTC);
     }
     
     /**
-     *  Final verification of all thread states. Waiter checks if everyone has left and closes the Restaurant. Returns true if all Students have left the Restaurant, false if not.
-     * 
-     *  @return boolean variable holding the result of the method's execution.
+     *  Checks if every Student's current state is Student.StudentState.ETM.
+     *  
+     *  @return Returns true if every Student is ETM, false if not.
      */
-    public boolean HaveAllStudentLeft(){
+    public boolean isEveryStudentEating() {
+        for(int s=0; s<TheRestaurantMain.nstudents; s++) {
+            if(studentState[s]!=Student.StudentState.ETM) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     *  Final verification of all thread states. Waiter checks if everyone has left and closes the Restaurant.
+     * 
+     *  @return  Returns true if all Students have left the Restaurant, false if not.
+     */
+    public boolean haveAllStudentLeft(){
         for(int i=0; i<TheRestaurantMain.nstudents; i++) {
-                if(studentState[i] != Student.StudentState.GH)
+                if(studentState[i] != Student.StudentState.GH) {
                     return false;
+                }
             }
         return true;
     }

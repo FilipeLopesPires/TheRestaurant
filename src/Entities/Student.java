@@ -19,13 +19,37 @@ public class Student extends Thread {
      *  Internal Enumerate holding all the possible states of the entity.
      */
     public enum StudentState {                                                  // Internal State Enum
+        /**
+         *  GOING_TO_THE_RESTAURANT - transition state with random time (initial state)
+         */
         GTTR,
+        /**
+         *  TAKING_A_SEAT_AT_THE_TABLE – blocking state; the student is waken up by the operation saluteTheClient of the waiter
+         */
         TASATT,
+        /**
+         *  SELECTING_THE_COURSES – transition state
+         */
         STC,
+        /**
+         *  ORGANIZING_THE_ORDER – blocking state; the student is waken up by the operation informCompanion of another student and, when all students are already at the table, by the operation getThePad of the waiter
+         */
         OTO,
+        /**
+         *  CHATTING_WITH_COMPANIONS – blocking state with transition; the student blocks while waiting for a course to be served and when he/she has finished eating it; transition occurs when the last course has been served and eaten
+         */
         CWC,
+        /**
+         *  ENJOYING_THE_MEAL – transition state
+         */
         ETM,
+        /**
+         *  PAYING_THE_MEAL – blocking state; the student is waken up by the operation presentTheBill of the waiter
+         */
         PTB,
+        /**
+         *  GOING_HOME – final state
+         */
         GH;
     }
 
@@ -45,7 +69,7 @@ public class Student extends Thread {
     public Student(Bar bar, Table table) {
         this.bar = bar;
         this.table = table;
-        studentState = StudentState.GTTR;
+        //studentState = StudentState.GTTR;
         nstudents++;
         ID = nstudents;
     }
@@ -60,7 +84,7 @@ public class Student extends Thread {
     @Override
     public void run() {
         walkABit();                                                             // GTTR
-        arrivedIn = bar.enter();                                                
+        arrivedIn = bar.enter();
         table.enter();                                                          // TASATT
         table.readTheMenu();                                                    // STC  
         if (arrivedIn == TheRestaurantMain.ArrivalOrder.FIRST) {
@@ -77,14 +101,12 @@ public class Student extends Thread {
         }
         for (int c = 0; c < TheRestaurantMain.ncourses; c++) {
             table.startEating(c + 1);                                           // ETM
+            table.endEating();                                                  // CWC
         }
-              table.endEating();                                                // CWC
+        
         if (table.hasEverybodyFinished())                                        
             bar.signalTheWaiter();
-                                                                                
-        
-            
-
+                           
         if (arrivedIn == TheRestaurantMain.ArrivalOrder.LAST) {
             table.shouldHaveArrivedEarlier();                                   // PTB
             table.honorTheBill();                                               
@@ -114,31 +136,31 @@ public class Student extends Thread {
      */
     
     /**
-     *  Returns the ID of the Student Thread.
+     *  Getter function that serves as an auxiliar for the entities, to know a Student's ID. 
      *
-     *  @return int variable holding the Student's ID.
+     *  @return Returns the ID of the Student Thread.
      */
     public int getID() {
         return ID;
     }
 
     /**
-     *  Returns the current state of the Student Thread.
+     *  Getter function that serves as an auxiliar for the entities, to know a Student's State. 
      *
-     *  @return StudentState variable holding the Student's state.
+     *  @return Returns the current state of the Student Thread.
      */
     public StudentState getStudentState() {
         return studentState;
     }
 
     /**
-     *  Sets a new state for the Student Thread if current state is different from the new state. Returns true if state is changed, false if not.
+     *  Sets a new state for the Student Thread if current state is different from the new state. 
      *
      *  @param newStudentState State to replace the current Thread's state.
-     *  @return boolean variable holding the result of the operation.
+     *  @return Returns true if state is changed, false if not.
      */
     public boolean setStudentState(StudentState newStudentState) {
-        if (studentState != newStudentState) {
+        if (studentState == null || studentState != newStudentState) {
             studentState = newStudentState;
             return true;
         }
@@ -146,9 +168,9 @@ public class Student extends Thread {
     }
     
     /**
-     *  Returns the place of arrival of the Student.
+     *  Getter function that serves as an auxiliar for the entities, to know a Student's place of arrival. 
      * 
-     *  @return element from the ArrivalOrder enumerate holding the place of arrival of the Student.
+     *  @return Returns the place of arrival of the Student.
      */
     public TheRestaurantMain.ArrivalOrder getArrivalOrder(){
         return arrivedIn;
