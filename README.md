@@ -8,6 +8,7 @@ The restaurant consist of 3 areas:
 - the Table Area
 - the Bar Area 
 - the Kitchen Area
+
 There are also 3 types of entities:
 - the Students, which are restaurant clients 
 - the Waiter
