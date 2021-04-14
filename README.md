@@ -1,6 +1,11 @@
 # The Restaurant
 Parallel and Distributed Implementations of 'The Restaurant Problem'
 
+![](https://img.shields.io/badge/Academical%20Project-Yes-green)
+![](https://img.shields.io/badge/Made%20with-Java-red)
+![](https://img.shields.io/badge/License-Free%20To%20Use-green)
+![](https://img.shields.io/badge/Maintained-No-red)
+
 ## Description
 
 This project allows the deployment of a simulated restaurant with either parallel or distributed execution of all entities.
